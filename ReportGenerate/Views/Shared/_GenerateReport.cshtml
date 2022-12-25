@@ -1,0 +1,30 @@
+﻿@model ReportGenerate.Models.Models.ViewModel.ProdOrderVM
+@{
+    ViewData["Title"] = "GenerateReport";
+}
+
+<div class="container">
+    <div class="text-center bg-info text-primary">
+        <h1>Your Order Number is: @Model.Order.OrderId</h1>
+    </div>
+    <hr />
+    <div class="mt-2">
+        <div>
+            <h4>your ordered productes are bellow:</h4>
+        </div>
+        <div class="col-md-12">
+            <div class="row">
+                @foreach (var item in Model.Product)
+                {
+                    <div col-md-4>
+                        <label>Name: @item.Name</label>
+                    </div>
+                    <div col-md-4>
+                        <label>Price: @item.Price</label>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+

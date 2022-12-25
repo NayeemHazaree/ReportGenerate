@@ -1,0 +1,137 @@
+﻿@model ReportGenerate.Models.Models.Order
+@{
+    ViewData["Title"] = "Order";
+}
+
+<div class="container">
+    <div class="col-md-12">
+        <div class="row">
+            <div class="col-md-3">
+                Select Product
+            </div>
+            <div class="col-md-6">
+                <select id="productDDL" onchange="addProductToTable()" asp-for="ProductId" asp-items="@Model.Prodcucts" class="form-control">
+                    <option disabled selected>--Select Product--</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    <div class="clearfix"></div>
+    <div class="mt-2">
+        <table id="TempProductDT" class="table table-striped table-bordered">
+            <thead>
+                <tr class="text-center">
+                    <th>Product Name</th>
+                    <th>Product Price</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+    <div class="mt-2" style="float:right;">
+        <button onclick="SaveOrder()" class="btn btn-outline-primary">Save</button>
+    </div>
+</div>
+ <div class="clearfix"></div>
+<div class="mt-2">
+    <table style="width:100%">
+        <tbody></tbody>
+    </table>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+        var OrderedItems = [];
+         $(document).ready(function () {
+            
+        });
+        
+        function addProductToTable(){
+            var prodId = $('#productDDL').val();
+            var listProductId = {
+                "ProductId":"",
+                };
+             
+            if(prodId != ''){
+                $.ajax({
+                    url: "/Order/GetProductById",
+                    dataType: "json",
+                    type: "POST",
+                    data: {
+                        Id: prodId,
+                    },
+                    success: function (response) {
+                        //OrderedItems.OrderId = "";
+                        //OrderedItems.ProductId = response.product.id;
+                        listProductId.ProductId = response.product.id;
+                        OrderedItems.push(response.product.id);
+                        var markup = "<tr class='text-center' id='" + response.product.id + "'><td><input type='text' id='tempName' value='" + response.product.name + "' readonly class='form-control'></td>" +
+                        "<td><input type='text' id='tempPrice' value='" + response.product.price + "' readonly class='form-control'></td>" +
+                        "<td><button class='btn btn-sm' style='color: red;' type='button' onclick='RemoveRow(\"" + response.product.id + "\")'><i class='fa fa-trash' aria-hidden='true'></i></button></td></tr>";
+                        $("#TempProductDT").append(markup);
+                    },
+                    error: function (err) {
+                        Alertify('Failed to load data!', 'danger');
+                    }
+                });
+            }
+            else{
+                Alertify('Please select a product', 'danger');
+            }
+        }
+
+        function SaveOrder(){
+            if (OrderedItems.length != 0) {
+                //var OrderedItems = {
+                //    //"OrderList": []
+
+                //};
+               
+               // OrderedItems.OrderList = TemporaryProduct;
+               // var orderedProd = JSON.stringify(OrderedItems);
+              //var orderProd1 = JSON.stringify({ 'orderedProduct': orderProd });
+              //console.log(orderProd1);
+              //var MainProdID={
+              //      "orderList": [],
+              // };
+                //MainProdID.orderList = OrderedItems;
+               //var doc_data = JSON.stringify(MainProdID);
+               //var prodId = $('#productDDL').val();
+                $.ajax({
+                    url: "/Order/SaveOrder",
+                    
+                    type: 'POST',
+                    data: {
+                        ProdId: OrderedItems,
+                    },
+                    success: function (response) {
+                        if (response.result != null) {
+                            var id = response.result[1];
+                            //$.ajax({
+                            //    url: "/Order/GenerateReport",
+                            //    type: 'GET',
+                            //    data: {
+                            //        OrderID: id ,
+                            //    },
+                            //    success: function (res) {
+                            //        console.log(res);
+                            //    },
+                            //    error: function (err) {
+                            //        Alertify('Failed to load data!', 'danger');
+                            //    }
+                            //});
+                            $("table tbody").empty();
+                            $("table tbody").append("<div class='col-md-12'><iframe src='../Order/GenerateReport?OrderID=" + id +"' style='width: 100%; height: 700px' alt='pdf'></iframe></div>");
+                        }
+                    },
+                    error: function (err) {
+                        Alertify('Failed to load data!', 'danger');
+                    }
+                });
+            }
+            else{
+                Alertify('Please Add product first', 'danger');
+            }
+        }
+    </script>
+}
